@@ -35,7 +35,9 @@ echo "step 1 done [findomain, assetfinder, subfinder]"
 
 echo "running alterx"
 
-$HOME/go/bin/alterx -l subdomains.txt -en -o permutations.txt
+$HOME/go/bin/alterx -l subdomains.txt -verbose -limit 50000 -o permutations.txt
+
+# add `-en`	flag to enrich wordlist by extracting words from input (it'll take lots and lots of time and it might look stuck, it's not.)
 
 if [ ! -s permutations.txt ]; then
     echo "no permutations generated"
