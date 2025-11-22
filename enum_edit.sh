@@ -35,26 +35,16 @@ fi
 
 echo "step 1 done [findomain, assetfinder, subfinder, github-subdomains, subbdom API]"
 
-echo "running alterx"
-
-$HOME/go/bin/alterx -l subdomains.txt -verbose -limit 50000 -o permutations.txt
-
-if [ ! -s permutations.txt ]; then
-    echo "no permutations generated"
-    rm -f permutations.txt
+echo "running dnsx to get dead subdomains"
+cat subdomains.txt | sort -u > all_domains.txt
+$HOME/go/bin/dnsx -l all_domains.txt -r ../resolvers.txt -json -o master_dns.json
+cat master_dns.json | jq -r 'select(.status_code == "NXDOMAIN" or .status_code == "SERVFAIL" or .status_code == "REFUSED") | .host' | sort -u > dead_subdomains.txt
+if [ ! -s dead_subdomains.txt ]; then
+    echo "no dead subdomains found"
+    rm -f dead_subdomains.txt
 else
-    echo "running dnsx to get dead subdomains"
-    cat subdomains.txt permutations.txt | sort -u > all_domains.txt
-    $HOME/go/bin/dnsx -l all_domains.txt -r ../resolvers.txt -json -o master_dns.json
-    cat master_dns.json | jq -r 'select(.status_code == "NXDOMAIN" or .status_code == "SERVFAIL" or .status_code == "REFUSED") | .host' | sort -u > dead_subdomains.txt
-    	if [ ! -s dead_subdomains.txt ]; then
-            echo "no dead subdomains found"
-            rm -f dead_subdomains.txt
-	else
-    	    echo "dead subdomains found"
-    	    echo "step 2 done [dnsx]"
-	fi
-    echo "step 3 done [alterx]"
+    echo "dead subdomains found"
+    echo "step 2 done [dnsx]"
 fi
 
 echo "running dnsx to get subdomains that resolve"
@@ -72,7 +62,7 @@ fi
 
 echo "running naabu"
 
-$HOME/go/bin/naabu -list resolved_subdomains.txt -p - -exclude-cdn -rate 750 -verify -o naabu_results.txt
+$HOME/go/bin/naabu -list resolved_subdomains.txt -top-ports 100 -exclude-cdn -rate 750 -verify -o naabu_results.txt
 
 if [ ! -s naabu_results.txt ]; then
     echo "no results found with naabu"
@@ -94,13 +84,9 @@ else
     echo "step 6 done [httpx]"
 fi
 
-echo "running gospider - DISABLED FOR NOW"
-
-$HOME/go/bin/gospider -S 200_OK_subdomains.txt -o gospider_results -u web -a -r --no-redirect --js false -c 10
-
 echo "running dnsx again to get IPs for live subdomains"
 
-grep -Ff 200_OK_subdomains.txt master_dns.json | jq -r 'select(.a != null) | .a[]' | sort -u > alive_IPs.txt
+cat master_dns.json | jq -r 'select(.a != null) | .a[]' | sort -u > alive_IPs.txt
 
 if [ ! -s alive_IPs.txt ]; then
     echo "no IPs found for live subdomains"
@@ -146,7 +132,7 @@ if [ ! -s CNAME_subdomains.txt ]; then
     exit 1
 else
    echo "step 11 done [dnsx]"
-   echo "running subzjack"
+   echo "running subjack"
    $HOME/go/bin/subjack -w CNAME_subdomains.txt -t 100 -timeout 30 -c ../fingerprints.json -o subjack_results.txt
     if [ ! -s subjack_results.txt ]; then
         echo "no subdomain takeover found"
