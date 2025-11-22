@@ -31,6 +31,10 @@
 ### 7 parameter fetch and reflection checks
 * [arjun](https://github.com/s0md3v/Arjun) - HTTP parameter discovery suite
 * [kxss](https://github.com/Emoe/kxss) - checking for what special characters are reflected without encoding
+
+### 8 port scanning
+* [naabu](https://github.com/projectdiscovery/naabu) - for active and pssive port scanning
+
 ---
 
 ## to-do
@@ -42,6 +46,7 @@
 - [x] add gospider to find pathes, js files, api endpoints, and parameters [DISABLED FOR NOW]
 - [x] add arjun and kxss to quickly check for reflections for possible rxss
 - [x] add github-subdomains for more subdomain enumration coverage
+- [x] add naabu for active and passive port scanning
 
 ## notes
 
