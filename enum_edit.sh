@@ -19,7 +19,7 @@ echo "running findomain, assetfinder, subfinder, github-subdomains, subbdom API"
 findomain -t "$domain" -u subdomains1.txt &
 $HOME/go/bin/assetfinder --subs-only "$domain" > subdomains2.txt &
 $HOME/go/bin/subfinder -d "$domain"  -config ~/.config/subfinder/config.yaml -o subdomains3.txt &
-$HOME/go/bin/github-subdomains -d "domain" -t $GITHUB_TOKEN -o subdomains4.txt &
+$HOME/go/bin/github-subdomains -d "$domain" -t $GITHUB_TOKEN -o subdomains4.txt &
 
 wait
 
