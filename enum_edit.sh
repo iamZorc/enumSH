@@ -14,7 +14,7 @@ cd "$domain"
 
 echo ""
 
-echo "running findomain, assetfinder, subfinder
+echo "running findomain, assetfinder, subfinder"
 
 findomain -t "$domain" -u subdomains1.txt &
 $HOME/go/bin/assetfinder --subs-only "$domain" > subdomains2.txt &
@@ -36,8 +36,6 @@ echo "step 1 done [findomain, assetfinder, subfinder]"
 echo "running alterx"
 
 $HOME/go/bin/alterx -l subdomains.txt -verbose -limit 50000 -o permutations.txt
-
-# add `-en`	flag to enrich wordlist by extracting words from input (it'll take lots and lots of time and it might look stuck, it's not.)
 
 if [ ! -s permutations.txt ]; then
     echo "no permutations generated"
@@ -83,6 +81,10 @@ else
     echo "step 5 done [httpx]"
 fi
 
+echo "running gospider"
+
+$HOME/go/bin/gospider -S 200_OK_subdomains.txt -o gospider_results -u web -a -r --no-redirect
+
 echo "running dnsx again to get IPs for live subdomains"
 
 grep -Ff 200_OK_subdomains.txt master_dns.json | jq -r 'select(.a != null) | .a[]' | sort -u > alive_IPs.txt
@@ -107,7 +109,7 @@ fi
 
 echo "running gau"
 
-cat 200_OK_subdomains.txt | $HOME/go/bin/gau --o gau_results.txt --threads 5 --blacklist png,jpg,svg,jpeg,
+cat 200_OK_subdomains.txt | $HOME/go/bin/gau --o gau_results.txt --threads 5 --blacklist jpg,jpeg,png.gif,bmp,svg,css,ico,woff,woff2,ttf,eot,pdf,txt,mp3,mp4
 
 if [ ! -s gau_results.txt ]; then
     echo "no results found with gau"
