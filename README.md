@@ -10,6 +10,7 @@
 * [findomain](https://github.com/findomain/findomain) - for initial subdomain gathering
 * [assetfinder](https://github.com/tomnomnom/assetfinder) - for finding associated subdomains
 * [subfinder](https://github.com/projectdiscovery/subfinder) - for passive subdomain discovery
+* [github-subdomains](https://github.com/gwen001/github-subdomains) - for subdomain gathering using github
 
 ### 2 permutation
 * [alterx](https://github.com/projectdiscovery/alterx) - creates permutations to find more potential subdomains
@@ -38,8 +39,9 @@
 - [x] integrate `VhostFinder` for virtual host discovery
 - [x] add a check for file word count before sorting and running `alterx`
 - [x] add a silent mode for cleaner tool execution
-- [x] add gospider to find pathes, js files, api endpoints, and parameters
+- [x] add gospider to find pathes, js files, api endpoints, and parameters [DISABLED FOR NOW]
 - [x] add arjun and kxss to quickly check for reflections for possible rxss
+- [x] add github-subdomains for more subdomain enumration coverage
 
 ## notes
 
