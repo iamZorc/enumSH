@@ -35,21 +35,6 @@
 ### 8 port scanning
 * [naabu](https://github.com/projectdiscovery/naabu) - for active and pssive port scanning
 
----
-
-## to-do
-
-- [x] add `dnsx` for advanced dns resolution
-- [x] integrate `VhostFinder` for virtual host discovery
-- [x] add a check for file word count before sorting and running `alterx`
-- [x] add a silent mode for cleaner tool execution
-- [x] add gospider to find pathes, js files, api endpoints, and parameters [DISABLED FOR NOW]
-- [x] add arjun and kxss to quickly check for reflections for possible rxss
-- [x] add github-subdomains for more subdomain enumration coverage
-- [x] add naabu for active and passive port scanning
-- [ ] add javascript analysis workflow
-- [ ] add s3 bucket discovery 
-
 ## notes
 
 resolvers.txt is updated on my VPS using cron command to curl the newset resolvers.txt and then override the current resolvers in that file, this ensure i have the least false positives
