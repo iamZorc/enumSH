@@ -96,7 +96,7 @@ fi
 
 echo "running gospider - DISABLED FOR NOW"
 
-#$HOME/go/bin/gospider -S 200_OK_subdomains.txt -o gospider_results -u web -a -r --no-redirect --js false -c 10
+$HOME/go/bin/gospider -S 200_OK_subdomains.txt -o gospider_results -u web -a -r --no-redirect --js false -c 10
 
 echo "running dnsx again to get IPs for live subdomains"
 
