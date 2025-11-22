@@ -70,7 +70,7 @@ fi
 
 echo "running httpx"
 
-$HOME/go/bin/httpx -l resolved_subdomains.txt -mc 200 -timeout 3 -o 200_OK_subdomains.txt
+$HOME/go/bin/httpx -l resolved_subdomains.txt -mc 401,402,301,302,500,200 -timeout 5 -o 200_OK_subdomains.txt
 
 if [ ! -s 200_OK_subdomains.txt ]; then
     echo "no 200 OK subdomains found"
@@ -83,7 +83,7 @@ fi
 
 echo "running gospider"
 
-$HOME/go/bin/gospider -S 200_OK_subdomains.txt -o gospider_results -u web -a -r --no-redirect
+$HOME/go/bin/gospider -S 200_OK_subdomains.txt -o gospider_results -u web -a -r --no-redirect -c 10
 
 echo "running dnsx again to get IPs for live subdomains"
 
@@ -102,35 +102,24 @@ $HOME/go/bin/VhostFinder -ips alive_IPs.txt -wordlist dead_subdomains.txt -verif
 
 if [ ! -s VhostFinder_results.txt ]; then
     echo "no Vhosts found"
-    rm -f Vhosts.txt
+    rm -f VhostFinder_results.txt
 else
     echo "step 7 done [VhostFinder]"
 fi
 
-echo "running gau"
+echo "starting archive deep dive"
 
-cat 200_OK_subdomains.txt | $HOME/go/bin/gau --o gau_results.txt --threads 5 --blacklist jpg,jpeg,png.gif,bmp,svg,css,ico,woff,woff2,ttf,eot,pdf,txt,mp3,mp4
+cat 200_OK_subdomains.txt | $HOME/go/bin/gau --o raw_results.txt --threads 15
 
-if [ ! -s gau_results.txt ]; then
-    echo "no results found with gau"
-    rm -f gau_results.txt
-else
+if [ -s raw_results.txt ]; then
     echo "step 8 done [gau]"
-    echo "running arjun"
-    arjun -i gau_results.txt -oT arjun_results.txt --stable --disable-redirects
-    if [ ! -s arjun_results.txt ]; then
-        echo "no results found with arjun"
-        rm -f arjun_results.txt
+    cat raw_results.txt | grep -vE "\.jpg|\.jpeg|\.png|\.gif|\.svg|\.css|\.ico|\.woff|\.ttf" > clean_urls.txt
+    cat clean_urls.txt | uro > unique_urls.txt
+    cat unique_urls.txt | grep "=" | $HOME/go/bin/kxss > kxss_results.txt
+    if [ -s kxss_results.txt ]; then
+        echo "step 9 done [kxss]"
     else
-        echo "step 9 done [arjun]"
-        echo "running kxss"
-        cat arjun_results.txt | $HOME/go/bin/kxss > kxss_results.txt
-        if [ ! -s kxss_results.txt ]; then
-            echo "no results found with kxss"
-            rm -f kxss_results.txt
-        else
-            echo "step 10 done [kxss]"
-        fi
+        rm -f kxss_results.txt
     fi
 fi
 
