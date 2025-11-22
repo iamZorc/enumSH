@@ -47,6 +47,8 @@
 - [x] add arjun and kxss to quickly check for reflections for possible rxss
 - [x] add github-subdomains for more subdomain enumration coverage
 - [x] add naabu for active and passive port scanning
+- [ ] add javascript analysis workflow
+- [ ] add s3 bucket discovery 
 
 ## notes
 
