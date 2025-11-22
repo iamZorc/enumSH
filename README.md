@@ -38,7 +38,7 @@
 - [x] integrate `VhostFinder` for virtual host discovery
 - [x] add a check for file word count before sorting and running `alterx`
 - [x] add a silent mode for cleaner tool execution
-- [ ] add gospider to find pathes, js files, api endpoints, and parameters
+- [x] add gospider to find pathes, js files, api endpoints, and parameters
 - [x] add arjun and kxss to quickly check for reflections for possible rxss
 
 ## notes
