@@ -14,24 +14,26 @@ cd "$domain"
 
 echo ""
 
-echo "running findomain, assetfinder, subfinder"
+echo "running findomain, assetfinder, subfinder, github-subdomains, subbdom API"
 
 findomain -t "$domain" -u subdomains1.txt &
 $HOME/go/bin/assetfinder --subs-only "$domain" > subdomains2.txt &
 $HOME/go/bin/subfinder -d "$domain"  -config ~/.config/subfinder/config.yaml -o subdomains3.txt &
+$HOME/go/bin/github-subdomains -d acss.att.com -t $GITHUB_TOKEN -o subdomains4.txt &
 
 wait
 
-if [ ! -s subdomains1.txt ] && [ ! -s subdomains2.txt ] && [ ! -s subdomains3.txt ]; then
+if [ ! -s subdomains1.txt ] && [ ! -s subdomains2.txt ] && [ ! -s subdomains3.txt ] && [ ! -s subdomains4.txt ]; then
    echo "subdomain file is empty, exiting."
-   rm -f subdomains1.txt subdomains2.txt subdomains3.txt
+   rm -f subdomains1.txt subdomains2.txt subdomains3.txt subdomains4.txt
    exit 1
 else
-   cat subdomains1.txt subdomains2.txt subdomains3.txt | sort -u -o subdomains.txt
-   rm -f subdomains1.txt subdomains2.txt subdomains3.txt
+   cat subdomains1.txt subdomains2.txt subdomains3.txt subdomains4.txt | sort -u -o subdomains.txt
+   curl -H "x-api-key: $SUBBDOM_API_KEY" "https://api.subbdom.com/v1/search?z=$domain" | jq -r '.[]' >> subdomains.txt
+   rm -f subdomains1.txt subdomains2.txt subdomains3.txt subdomains4.txt
 fi
 
-echo "step 1 done [findomain, assetfinder, subfinder]"
+echo "step 1 done [findomain, assetfinder, subfinder, github-subdomains, subbdom API]"
 
 echo "running alterx"
 
@@ -68,6 +70,17 @@ else
     echo "step 4 done [dnsx]"
 fi
 
+echo "running naabu"
+
+$HOME/go/bin/naabu -list resolved_subdomains.txt -p - -exclude-cdn -rate 750 -verify -o naabu_results.txt
+
+if [ ! -s naabu_results.txt ]; then
+    echo "no results found with naabu"
+    rm -f naabu_results.txt
+else
+    echo "step 5 done [naabu]"
+fi
+
 echo "running httpx"
 
 $HOME/go/bin/httpx -l resolved_subdomains.txt -mc 401,402,301,302,500,200 -timeout 5 -o 200_OK_subdomains.txt
@@ -78,12 +91,12 @@ if [ ! -s 200_OK_subdomains.txt ]; then
     exit 1
 else
     sort -u 200_OK_subdomains.txt -o 200_OK_subdomains.txt
-    echo "step 5 done [httpx]"
+    echo "step 6 done [httpx]"
 fi
 
-echo "running gospider"
+echo "running gospider - DISABLED FOR NOW"
 
-$HOME/go/bin/gospider -S 200_OK_subdomains.txt -o gospider_results -u web -a -r --no-redirect -c 10
+#$HOME/go/bin/gospider -S 200_OK_subdomains.txt -o gospider_results -u web -a -r --no-redirect --js false -c 10
 
 echo "running dnsx again to get IPs for live subdomains"
 
@@ -93,7 +106,7 @@ if [ ! -s alive_IPs.txt ]; then
     echo "no IPs found for live subdomains"
     rm -f alive_IPs.txt
 else
-    echo "step 6 done [dnsx]"
+    echo "step 7 done [dnsx]"
 fi
 
 echo "running VhostFinder"
@@ -104,7 +117,7 @@ if [ ! -s VhostFinder_results.txt ]; then
     echo "no Vhosts found"
     rm -f VhostFinder_results.txt
 else
-    echo "step 7 done [VhostFinder]"
+    echo "step 8 done [VhostFinder]"
 fi
 
 echo "starting archive deep dive"
@@ -112,12 +125,12 @@ echo "starting archive deep dive"
 cat 200_OK_subdomains.txt | $HOME/go/bin/gau --o raw_results.txt --threads 15
 
 if [ -s raw_results.txt ]; then
-    echo "step 8 done [gau]"
+    echo "step 9 done [gau]"
     cat raw_results.txt | grep -vE "\.jpg|\.jpeg|\.png|\.gif|\.svg|\.css|\.ico|\.woff|\.ttf" > clean_urls.txt
     cat clean_urls.txt | uro > unique_urls.txt
     cat unique_urls.txt | grep "=" | $HOME/go/bin/kxss > kxss_results.txt
     if [ -s kxss_results.txt ]; then
-        echo "step 9 done [kxss]"
+        echo "step 10 done [kxss]"
     else
         rm -f kxss_results.txt
     fi
@@ -133,12 +146,12 @@ if [ ! -s CNAME_subdomains.txt ]; then
     exit 1
 else
    echo "step 11 done [dnsx]"
-   echo "running subzy"
-   $HOME/go/bin/subzy run --hide_fails --targets CNAME_subdomains.txt >> subdomain_takeover.txt
-    if [ ! -s subdomain_takeover.txt ]; then
+   echo "running subzjack"
+   $HOME/go/bin/subjack -w CNAME_subdomains.txt -t 100 -timeout 30 -c ../fingerprints.json -o subjack_results.txt
+    if [ ! -s subjack_results.txt ]; then
         echo "no subdomain takeover found"
-        rm -f subdomain_takeover.txt
+        rm -f subjack_results.txt
     else
-        echo "step 12 done [subzy]"
+        echo "step 12 done [subjack]"
     fi
 fi
