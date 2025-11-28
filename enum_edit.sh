@@ -1,5 +1,27 @@
 #!/bin/bash
 
+RED='\033[38;5;196m'
+GREEN='\033[38;5;46m'
+YELLOW='\033[[38;5;226m'
+BLUE='\033[38;5;27m'
+PURPLE='\033[38;5;141m'
+CYAN='\033[38;5;51m'
+RESET='\033[0m'
+
+clear
+echo -e "${PURPLE}"
+cat << "EOF"
+   _____ _   _ _   _ __  __   _____ _     _
+  | ____| \ | | | | |  \/  | / ____| |   | |
+  | |__ |  \| | | | | \  / | (___  |  |__| |
+  | ___|| . ` | | | | |\/| | \___\ |   __  |
+  | |   | |\  | |_| | |  | | ____) |  |  | |
+  |_____|_| \_| \_/ |_|  |_|_____/ |__|  |_|
+
+EOF
+echo -e "${CYAN}                              with <3 by y0ussefelgohre${RESET}"
+echo
+
 if [ ! -f resolvers.txt ]; then
     echo "no resolvers file found, exiting."
     echo "use this URL to find resolvers -> https://github.com/trickest/resolvers"
@@ -63,6 +85,18 @@ else
     echo "[httpx]"
 fi
 
+echo "running paramspider"
+
+paramspider -l 200_OK_subdomains.txt
+
+echo "paramspider found URLs"
+
+cat results/*.txt > all_URls.txt
+
+echo "running kxss"
+
+cat all_URls.txt | $HOME/go/bin/kxss > kxss_results.txt
+
 echo "running httpx [404]"
 
 $HOME/go/bin/httpx -l resolved_subdomains.txt -mc 404 -timeout 5 -o 404_subdomains.txt
@@ -105,7 +139,6 @@ cat master_dns.json | jq -r 'select(.cname != null) | .host' | sort -u > CNAME_s
 if [ ! -s CNAME_subdomains.txt ]; then
     echo "no subdomains with CNAME DNS record found, exiting."
     rm -f CNAME_subdomains.txt
-    exit 1
 else
    echo "step 10 done [dnsx]"
    rm -f master_dns.json
@@ -123,6 +156,6 @@ echo "running dirsearch"
 
 mkdir -p dirsearch
 
-source ../../.venv/bin/activate
+source $HOME/.venv/bin/activate
 
-python3 "$HOME/dirsearch.py" -l 404_subdomains.txt -t 30 -i 200 -o dirsearch/dirsearch_results.txt
+python3 "$HOME/dirsearch/dirsearch.py" -l 404_subdomains.txt -t 30 -i 200 -o dirsearch/dirsearch_results.txt
