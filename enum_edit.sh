@@ -158,4 +158,4 @@ mkdir -p dirsearch
 
 source $HOME/.venv/bin/activate
 
-python3 "$HOME/dirsearch/dirsearch.py" -l 404_subdomains.txt -t 30 -i 200 -o dirsearch/dirsearch_results.txt
+python3 "$HOME/dirsearch/dirsearch.py" -l 200_OK_subdomains.txt -t 30 -i 200 -o dirsearch/dirsearch_results.txt
