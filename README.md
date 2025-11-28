@@ -25,6 +25,12 @@
 ### 5 content discovery
 * [dirsearch](https://github.com/maurosoria/dirsearch) - for content discovery using it's built in wordlists
 
+### 6 url mining
+* [paramspider](https://github.com/devanshbatham/ParamSpider) - for url mining
+
+### 7 injection checking
+* [kxss](https://github.com/Emoe/kxss) - for checking reflection
+
 ## notes
 
 resolvers.txt is updated on my VPS using cron command to curl the newset resolvers.txt and then override the current resolvers in that file, this ensure i have the least false positives
