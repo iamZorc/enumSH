@@ -118,3 +118,11 @@ else
         echo "[subjack]"
     fi
 fi
+
+echo "running dirsearch"
+
+mkdir -p dirsearch
+
+source ../../.venv/bin/activate
+
+python3 "$HOME/dirsearch.py" -l 404_subdomains.txt -t 30 -i 200 -o dirsearch/dirsearch_results.txt
