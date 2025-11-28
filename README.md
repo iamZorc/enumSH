@@ -22,7 +22,7 @@
 ### 4 port scanning
 * [naabu](https://github.com/projectdiscovery/naabu) - for active and pssive port scanning
 
-### 4 content discovery
+### 5 content discovery
 * [dirsearch](https://github.com/maurosoria/dirsearch) - for content discovery using it's built in wordlists
 
 ## notes
