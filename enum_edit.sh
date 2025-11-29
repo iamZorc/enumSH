@@ -10,7 +10,7 @@ cat << "EOF"
   |_____|_| \_| \_/ |_|  |_|_____/ |_|  |_|
 
 EOF
-echo -e "                              with <3 by y0ussefelgohre${RESET}"
+echo -e "                              with <3 by y0ussefelgohre"
 echo
 
 if [ ! -f resolvers.txt ]; then
@@ -27,26 +27,23 @@ mkdir -p "$domain"
 
 cd "$domain"
 
-echo ""
-
 echo "running findomain, assetfinder, subfinder, github-subdomains, subbdom API"
 
 findomain -t "$domain" -u subdomains1.txt &
 assetfinder --subs-only "$domain" > subdomains2.txt &
 subfinder -d "$domain"  -config ~/.config/subfinder/config.yaml -o subdomains3.txt &
 github-subdomains -d "$domain" -t "$github_token" -o subdomains4.txt &
+curl -H "x-api-key: "$subbdom_token"" "https://api.subbdom.com/v1/search?z=$domain" | jq -r '.[]' > subdomains5.txt &
 
 wait
 
-if [ ! -s subdomains1.txt ] && [ ! -s subdomains2.txt ] && [ ! -s subdomains3.txt ] && [ ! -s subdomains4.txt ]; then
-   echo "subdomain file is empty, exiting."
-   rm -f subdomains1.txt subdomains2.txt subdomains3.txt subdomains4.txt
-   exit 1
-else
-   cat subdomains1.txt subdomains2.txt subdomains3.txt subdomains4.txt | sort -u -o subdomains.txt
-   curl -H "x-api-key: "$subbdom_token"" "https://api.subbdom.com/v1/search?z=$domain" | jq -r '.[]' >> subdomains.txt
-   rm -f subdomains1.txt subdomains2.txt subdomains3.txt subdomains4.txt
-fi
+for file in subdomains*.txt; do
+    [ -s "$file" ] || rm -f "$file"
+done
+
+cat subdomains*.txt 2>/dev/null | sort -u > subdomains.txt
+
+rm -f subdomains{1..5}.txt
 
 echo "[findomain, assetfinder, subfinder, github-subdomains, subbdom API]"
 
