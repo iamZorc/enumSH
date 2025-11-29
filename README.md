@@ -1,6 +1,6 @@
 # enum.sh
 
-> a simple script that automates the initial phase of subdomain reconnaissance by chaining together several popular tools
+> a simple script that automates the initial phase of subdomain enumeration by chaining together several popular tools
 
 ---
 
