@@ -1,25 +1,16 @@
 #!/bin/bash
 
-RED='\033[38;5;196m'
-GREEN='\033[38;5;46m'
-YELLOW='\033[[38;5;226m'
-BLUE='\033[38;5;27m'
-PURPLE='\033[38;5;141m'
-CYAN='\033[38;5;51m'
-RESET='\033[0m'
-
 clear
-echo -e "${PURPLE}"
 cat << "EOF"
    _____ _   _ _   _ __  __   _____ _    _
   | ____| \ | | | | |  \/  | / ____| |  | |
   | |__ |  \| | | | | \  / | (___  | |__| |
   | ___|| . ` | | | | |\/| | \___\ |  __  |
-  | |   | |\  | |_| | |  | | ____) | |  | |
+  | |   | |\  | |_| | |  | |_____) | |  | |
   |_____|_| \_| \_/ |_|  |_|_____/ |_|  |_|
 
 EOF
-echo -e "${CYAN}                              with <3 by y0ussefelgohre${RESET}"
+echo -e "                              with <3 by y0ussefelgohre${RESET}"
 echo
 
 if [ ! -f resolvers.txt ]; then
@@ -39,9 +30,9 @@ echo ""
 echo "running findomain, assetfinder, subfinder, github-subdomains, subbdom API"
 
 findomain -t "$domain" -u subdomains1.txt &
-$HOME/go/bin/assetfinder --subs-only "$domain" > subdomains2.txt &
-$HOME/go/bin/subfinder -d "$domain"  -config ~/.config/subfinder/config.yaml -o subdomains3.txt &
-$HOME/go/bin/github-subdomains -d "$domain" -t $github_token -o subdomains4.txt &
+assetfinder --subs-only "$domain" > subdomains2.txt &
+subfinder -d "$domain"  -config ~/.config/subfinder/config.yaml -o subdomains3.txt &
+github-subdomains -d "$domain" -t $github_token -o subdomains4.txt &
 
 wait
 
@@ -59,7 +50,7 @@ echo "[findomain, assetfinder, subfinder, github-subdomains, subbdom API]"
 
 cat subdomains.txt | sort -u > all_domains.txt
 
-$HOME/go/bin/dnsx -l all_domains.txt -r ../resolvers.txt -json -o master_dns.json
+dnsx -l all_domains.txt -r ../resolvers.txt -json -o master_dns.json
 
 echo "running dnsx to get subdomains that resolve"
 
@@ -75,7 +66,7 @@ fi
 
 echo "running httpx [200 OK]"
 
-$HOME/go/bin/httpx -l resolved_subdomains.txt -mc 200 -timeout 5 -o 200_OK_subdomains.txt
+httpx -l resolved_subdomains.txt -mc 200 -timeout 5 -o 200_OK_subdomains.txt
 
 if [ ! -s 200_OK_subdomains.txt ]; then
     echo "no 200 OK subdomains found"
@@ -95,11 +86,11 @@ cat results/*.txt > all_URls.txt
 
 echo "running kxss"
 
-cat all_URls.txt | $HOME/go/bin/kxss > kxss_results.txt
+cat all_URls.txt | kxss > kxss_results.txt
 
 echo "running httpx [404]"
 
-$HOME/go/bin/httpx -l resolved_subdomains.txt -mc 404 -timeout 5 -o 404_subdomains.txt
+httpx -l resolved_subdomains.txt -mc 404 -timeout 5 -o 404_subdomains.txt
 
 if [ ! -s 404_subdomains.txt ]; then
     echo "no 404 subdomains found"
@@ -123,7 +114,7 @@ fi
 
 echo "running naabu"
 
-$HOME/go/bin/naabu -list alive_IPs.txt -top-ports 1000 -exclude-cdn -rate 750 -verify -o naabu_results.txt
+naabu -list alive_IPs.txt -top-ports 1000 -exclude-cdn -rate 750 -verify -o naabu_results.txt
 
 if [ ! -s naabu_results.txt ]; then
     echo "no results found with naabu"
@@ -143,7 +134,7 @@ else
    echo "step 10 done [dnsx]"
    rm -f master_dns.json
    echo "running subjack"
-   $HOME/go/bin/subjack -w CNAME_subdomains.txt -t 100 -timeout 30 -c ../fingerprints.json -o subjack_results.txt
+   subjack -w CNAME_subdomains.txt -t 100 -timeout 30 -c ../fingerprints.json -o subjack_results.txt
     if [ ! -s subjack_results.txt ]; then
         echo "no subdomain takeover found"
         rm -f subjack_results.txt
@@ -156,6 +147,6 @@ echo "running dirsearch"
 
 mkdir -p dirsearch
 
-source $HOME/.venv/bin/activate
+source ~/.venv/bin/activate
 
 python3 "$HOME/dirsearch/dirsearch.py" -l 200_OK_subdomains.txt -t 30 -i 200 -o dirsearch/dirsearch_results.txt
