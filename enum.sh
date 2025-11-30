@@ -74,7 +74,7 @@ if [ ! -s 200_OK_subdomains.txt ]; then
 else
     echo "[httpx]"
     grep -Ef ../keywords.txt 200_OK_subdomains.txt > important_200_subdomains.txt
-    if[ ! -s important_200_subdomains.txt ]; then
+    if [ ! -s important_200_subdomains.txt ]; then
         echo "no alive important subdomain"
         rm -f important_200_subdomains.txt
     else
@@ -106,7 +106,7 @@ if [ ! -s 404_subdomains.txt ]; then
 else
     echo "[httpx]"
     grep -Ef ../keywords.txt 404_subdomains.txt > important_404_subdomains.txt
-    if[ ! -s important_404_subdomains.txt ]; then
+    if [ ! -s important_404_subdomains.txt ]; then
         echo "no important subdomain"
         rm -f important_404_subdomains.txt
     else
