@@ -73,6 +73,7 @@ if [ ! -s 200_OK_subdomains.txt ]; then
     exit 1
 else
     echo "[httpx]"
+    cat 200_OK_subdomains.txt | grep -e "dev" -e "test" -e "staging" -e "demo" -e "beta" -e "preview" -e "sandbox" -e "debug" -e "build" -e "admin" -e "dashbaord" -e "panel" -e "portal" -e "control" -e "management" -e "cp" -e "secure" -e "private"-e "vpn" -e "api" -e "v1" -e "v2" -e "graphql" -e "rest" -e "webhook" -e "gateway" -e "proxy" -e "internal" -e "s3" -e "app" -e "log" -e "logs" > important_200_subdomains.txt
 fi
 
 echo "running paramspider"
@@ -98,6 +99,7 @@ if [ ! -s 404_subdomains.txt ]; then
     rm -f 404_subdomains.txt
 else
     echo "[httpx]"
+    cat 404_subdomains.txt | grep -e "dev" -e "test" -e "staging" -e "demo" -e "beta" -e "preview" -e "sandbox" -e "debug" -e "build" -e "admin" -e "dashbaord" -e "panel" -e "portal" -e "control" -e "management" -e "cp" -e "secure" -e "private"-e "vpn" -e "api" -e "v1" -e "v2" -e "graphql" -e "rest" -e "webhook" -e "gateway" -e "proxy" -e "internal" -e "s3" -e "app" -e "log" -e "logs" > important_404_subdomains.txt
 fi
 
 rm -f resolved_subdomains.txt
