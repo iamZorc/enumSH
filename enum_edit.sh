@@ -73,7 +73,7 @@ if [ ! -s 200_OK_subdomains.txt ]; then
     exit 1
 else
     echo "[httpx]"
-    grep -Ef keywords.txt 200_OK_subdomains.txt > important_200_subdomains.txt
+    grep -Ef ../keywords.txt 200_OK_subdomains.txt > important_200_subdomains.txt
 fi
 
 echo "running paramspider"
@@ -99,7 +99,7 @@ if [ ! -s 404_subdomains.txt ]; then
     rm -f 404_subdomains.txt
 else
     echo "[httpx]"
-    grep -Ef keywords.txt 404_subdomains.txt > important_404_subdomains.txt
+    grep -Ef ../keywords.txt 404_subdomains.txt > important_404_subdomains.txt
 fi
 
 rm -f resolved_subdomains.txt
