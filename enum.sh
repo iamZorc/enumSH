@@ -75,7 +75,7 @@ else
     echo "[httpx]"
     grep -Ef ../keywords.txt 200_OK_subdomains.txt > important_200_subdomains.txt
     if[ ! -s important_200_subdomains.txt ]; then
-        echo "no important subdomain"
+        echo "no alive important subdomain"
         rm -f important_200_subdomains.txt
     else
         echo "important subdomains found"
@@ -101,7 +101,7 @@ echo "running httpx [404]"
 httpx -l resolved_subdomains.txt -mc 404 -timeout 5 -o 404_subdomains.txt
 
 if [ ! -s 404_subdomains.txt ]; then
-    echo "no 404 subdomains found"
+    echo "no dead subdomains found"
     rm -f 404_subdomains.txt
 else
     echo "[httpx]"
