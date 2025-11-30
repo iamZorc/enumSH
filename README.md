@@ -34,3 +34,5 @@
 ## notes
 
 resolvers.txt is updated on my VPS using cron command to curl the newset resolvers.txt and then override the current resolvers in that file, this ensure i have the least false positives
+
+keywords.txt file has keywords I'm looking for in the subdomains.txt file to extract important files, I'll update this file when i find a new keyword that suits the file purpose
