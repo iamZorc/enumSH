@@ -96,7 +96,9 @@ httpx -l cidr2ip.txt -mc 301,302,200 -sc -cl -ct -o httpx_IPs_results.txt
 
 if [ ! -s httpx_IPs_results.txt ]; then
     echo "no results found with httpx"
+    rm -f httpx_IPs_results.txt
 else
+    awk '{print $1}' httpx_IPs_results.txt > clean_httpx_IPs.txt
     echo "IPs running a webserver found"
     echo "[httpx]"
 fi
@@ -149,7 +151,7 @@ fi
 echo "running naabu"
 
 naabu -list alive_IPs.txt -top-ports 1000 -exclude-cdn -rate 750 -verify -o naabu_results.txt &
-naabu -list httpx_IPs_results.txt -top-ports 1000 -exclude-cdn -rate 750 -verify -o naabu_results2.txt &
+naabu -list clean_httpx_IPs.txt -top-ports 1000 -exclude-cdn -rate 750 -verify -o naabu_results2.txt &
 
 wait
 
@@ -194,7 +196,7 @@ mkdir -p dirsearch
 source ~/.venv/bin/activate
 
 python3 "$HOME/dirsearch/dirsearch.py" -l 200_OK_subdomains.txt -t 30 -i 200 -o dirsearch/dirsearch_results.txt &
-python3 "$HOME/dirsearch/dirsearch.py" -l httpx_IPs_results.txt -t 30 -i 200 -o dirsearch/dirsearch_results2.txt &
+python3 "$HOME/dirsearch/dirsearch.py" -l clean_httpx_IPs.txt -t 30 -i 200 -o dirsearch/dirsearch_results2.txt &
 
 wait
 
