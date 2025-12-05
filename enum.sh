@@ -63,6 +63,8 @@ else
     echo "[dnsx]"
 fi
 
+rm -f all_domains.txt
+
 echo "running httpx [200 OK]"
 
 httpx -l resolved_subdomains.txt -mc 200 -timeout 5 -o 200_OK_subdomains.txt
@@ -80,6 +82,23 @@ else
     else
         echo "important subdomains found"
     fi
+fi
+
+echo -n "enter the target ASN number: "
+
+read ASN
+
+echo "-i origin $ASN" | nc whois.radb.net 43 | grep '^route:' | awk '{print $2}' > IP_ranges.txt
+
+cidr2ip -f IP_ranges.txt > cidr2ip.txt
+
+httpx -l cidr2ip.txt -mc 301,302,200 -sc -cl -ct -o httpx_IPs_results.txt
+
+if [ ! -s httpx_IPs_results.txt ]; then
+    echo "no results found with httpx"
+else
+    echo "IPs running a webserver found"
+    echo "[httpx]"
 fi
 
 echo "running paramspider"
@@ -129,11 +148,21 @@ fi
 
 echo "running naabu"
 
-naabu -list alive_IPs.txt -top-ports 1000 -exclude-cdn -rate 750 -verify -o naabu_results.txt
+naabu -list alive_IPs.txt -top-ports 1000 -exclude-cdn -rate 750 -verify -o naabu_results.txt &
+naabu -list httpx_IPs_results.txt -top-ports 1000 -exclude-cdn -rate 750 -verify -o naabu_results2.txt &
+
+wait
 
 if [ ! -s naabu_results.txt ]; then
     echo "no results found with naabu"
     rm -f naabu_results.txt
+else
+    echo "[naabu]"
+fi
+
+if [ ! -s naabu_results2.txt ]; then
+    echo "no results found with naabu"
+    rm -f naabu_results2.txt
 else
     echo "[naabu]"
 fi
@@ -164,6 +193,25 @@ mkdir -p dirsearch
 
 source ~/.venv/bin/activate
 
-python3 "$HOME/dirsearch/dirsearch.py" -l 200_OK_subdomains.txt -t 30 -i 200 -o dirsearch/dirsearch_results.txt
+python3 "$HOME/dirsearch/dirsearch.py" -l 200_OK_subdomains.txt -t 30 -i 200 -o dirsearch/dirsearch_results.txt &
+python3 "$HOME/dirsearch/dirsearch.py" -l httpx_IPs_results.txt -t 30 -i 200 -o dirsearch/dirsearch_results2.txt &
+
+wait
+
+if [ ! -s dirsearch/dirsearch_results.txt ]; then
+    echo "no results found with dirsearch for alive subdomains"
+    rm -f dirsearch/dirsearch_results.txt
+else
+    echo "results found"
+    echo "[dirsearch]"
+fi
+
+if [ ! -s dirsearch/dirsearch_results2.txt ]; then
+    echo "no results found with dirsearch for alive subdomains"
+    rm -f dirsearch/dirsearch_results2.txt
+else
+    echo "results found"
+    echo "[dirsearch]"
+fi
 
 deactivate
