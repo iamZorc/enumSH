@@ -31,6 +31,9 @@
 ### 7 injection checking
 * [kxss](https://github.com/Emoe/kxss) - for checking reflection
 
+### 8 CIDR to IP
+* [cidr2ip](https://github.com/codeexpress/cidr2ip) - for converting CIDR to a list of IPs so i can use it later
+
 ## notes
 
 resolvers.txt is updated on my VPS using cron command to curl the newset resolvers.txt and then override the current resolvers in that file, this ensure i have the least false positives
