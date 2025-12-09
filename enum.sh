@@ -23,6 +23,8 @@ echo -n "enter target name (in this format -> target.TLD): "
 
 read domain
 
+# domain_no_TLD="${domain%%.*}"
+
 mkdir -p "$domain"
 
 cd "$domain"
@@ -84,25 +86,6 @@ else
     fi
 fi
 
-echo -n "enter the target ASN number: "
-
-read ASN
-
-echo "-i origin $ASN" | nc whois.radb.net 43 | grep '^route:' | awk '{print $2}' > IP_ranges.txt
-
-cidr2ip -f IP_ranges.txt > cidr2ip.txt
-
-httpx -l cidr2ip.txt -mc 301,302,200 -sc -cl -ct -o httpx_IPs_results.txt
-
-if [ ! -s httpx_IPs_results.txt ]; then
-    echo "no results found with httpx"
-    rm -f httpx_IPs_results.txt
-else
-    awk '{print $1}' httpx_IPs_results.txt > clean_httpx_IPs.txt
-    echo "IPs running a webserver found"
-    echo "[httpx]"
-fi
-
 echo "running paramspider"
 
 paramspider -l 200_OK_subdomains.txt
@@ -137,37 +120,31 @@ fi
 
 rm -f resolved_subdomains.txt
 
-echo "running dnsx again to get IPs for live subdomains"
+#echo "running dnsx again to get IPs for live subdomains"
 
-cat master_dns.json | jq -r 'select(.a != null) | .a[]' | sort -u > alive_IPs.txt
+#cat master_dns.json | jq -r 'select(.a != null) | .a[]' | sort -u > alive_IPs.txt
 
-if [ ! -s alive_IPs.txt ]; then
-    echo "no IPs found for live subdomains"
-    rm -f alive_IPs.txt
-else
-    echo "[dnsx]"
-fi
+#if [ ! -s alive_IPs.txt ]; then
+#    echo "no IPs found for live subdomains"
+#    rm -f alive_IPs.txt
+#else
+#    echo "[dnsx]"
+#fi
 
-echo "running naabu"
+# new work goes here
 
-naabu -list alive_IPs.txt -top-ports 1000 -exclude-cdn -rate 750 -verify -o naabu_results.txt &
-naabu -list clean_httpx_IPs.txt -top-ports 1000 -exclude-cdn -rate 750 -verify -o naabu_results2.txt &
+#echo "running naabu"
 
-wait
+#naabu -list alive_IPs.txt -top-ports 1000 -exclude-cdn -rate 750 -verify -o naabu_results.txt
 
-if [ ! -s naabu_results.txt ]; then
-    echo "no results found with naabu"
-    rm -f naabu_results.txt
-else
-    echo "[naabu]"
-fi
-
-if [ ! -s naabu_results2.txt ]; then
-    echo "no results found with naabu"
-    rm -f naabu_results2.txt
-else
-    echo "[naabu]"
-fi
+#if [ ! -s naabu_results.txt ]; then
+#    echo "no results found with naabu"
+#    rm -f naabu_results.txt
+#    exit 1
+#else
+#    echo "[naabu]"
+#    exit 1
+#fi
 
 echo "running dnsx again to get subdomains that has CNAME DNS records from the resolved subdomains"
 
@@ -196,23 +173,11 @@ mkdir -p dirsearch
 source ~/.venv/bin/activate
 
 python3 "$HOME/dirsearch/dirsearch.py" -l 200_OK_subdomains.txt -t 30 -i 200 -o dirsearch/dirsearch_results.txt &
-python3 "$HOME/dirsearch/dirsearch.py" -l clean_httpx_IPs.txt -t 30 -i 200 -o dirsearch/dirsearch_results2.txt &
-
-wait
 
 if [ ! -s dirsearch/dirsearch_results.txt ]; then
     echo "no results found with dirsearch for alive subdomains"
     rm -f dirsearch/dirsearch_results.txt
 else
-    echo "results found"
-    echo "[dirsearch]"
-fi
-
-if [ ! -s dirsearch/dirsearch_results2.txt ]; then
-    echo "no results found with dirsearch for alive subdomains"
-    rm -f dirsearch/dirsearch_results2.txt
-else
-    echo "results found"
     echo "[dirsearch]"
 fi
 
