@@ -120,31 +120,36 @@ fi
 
 rm -f resolved_subdomains.txt
 
-#echo "running dnsx again to get IPs for live subdomains"
-
-#cat master_dns.json | jq -r 'select(.a != null) | .a[]' | sort -u > alive_IPs.txt
-
-#if [ ! -s alive_IPs.txt ]; then
-#    echo "no IPs found for live subdomains"
-#    rm -f alive_IPs.txt
-#else
-#    echo "[dnsx]"
-#fi
-
 # new work goes here
 
-#echo "running naabu"
+echo "enter targets ASN (starts with 'AS'): "
+read target_ASN
 
-#naabu -list alive_IPs.txt -top-ports 1000 -exclude-cdn -rate 750 -verify -o naabu_results.txt
+asnmap -a "$target_ASN" -o CIDR_for_target.txt
 
-#if [ ! -s naabu_results.txt ]; then
-#    echo "no results found with naabu"
-#    rm -f naabu_results.txt
-#    exit 1
-#else
-#    echo "[naabu]"
-#    exit 1
-#fi
+if [ ! -s CIDR_for_target.txt ]; then
+    echo "no CIDR found with that ASN"
+    rm -f CIDR_for_target.txt
+else
+    echo "found CIDR for that ASN, converting to IPs the script can proccess"
+    cidr2ip -f CIDR_for_target.txt > target_IPs.txt
+    echo "running naabu"
+    naabu -list CIDR_for_target.txt -top-ports 1000 -exclude-cdn -rate 750 -verify -o naabu_results.txt
+    if [ ! -s naabu_results.txt ]; then
+        echo "no results found with naabu"
+        rm -f naabu_results.txt
+        exit 1
+    else
+        echo "[naabu]"
+    fi
+    httpx -l target_IPs.txt -sc -cl -ct -title -server -td -mc 200 -t 75 -o httpx_target_IPs.txt
+    if [ ! -s httpx_target_IPs.txt ]; then
+        echo "no results found with httpx for target IPs"
+        rm -f httpx_target_IPs.txt
+    else
+        echo "[httpx]"
+    fi
+fi
 
 echo "running dnsx again to get subdomains that has CNAME DNS records from the resolved subdomains"
 
@@ -172,11 +177,21 @@ mkdir -p dirsearch
 
 source ~/.venv/bin/activate
 
-python3 "$HOME/dirsearch/dirsearch.py" -l 200_OK_subdomains.txt -t 30 -i 200 -o dirsearch/dirsearch_results.txt &
+python3 "$HOME/dirsearch/dirsearch.py" -l 200_OK_subdomains.txt -t 30 -i 200 -o dirsearch/200_dirs.txt &
+python3 "$HOME/dirsearch/dirsearch.py" -l 404_subdomains.txt -t 30 -i 200 -o dirsearch/404_dirs.txt &
 
-if [ ! -s dirsearch/dirsearch_results.txt ]; then
+wait
+
+if [ ! -s dirsearch/200_dirs.txt ]; then
     echo "no results found with dirsearch for alive subdomains"
-    rm -f dirsearch/dirsearch_results.txt
+    rm -f dirsearch/200_dirs.txt
+else
+    echo "[dirsearch]"
+fi
+
+if [ ! -s dirsearch/404_dirs.txt  ]; then
+    echo "no results found with dirsearch for dead subdomains"
+    rm -f dirsearch/404_dirs.txt
 else
     echo "[dirsearch]"
 fi
