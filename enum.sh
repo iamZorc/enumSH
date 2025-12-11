@@ -92,15 +92,21 @@ echo "running paramspider"
 
 paramspider -l 200_OK_subdomains.txt
 
-echo "paramspider found URLs"
-
 cat results/*.txt > all_URls.txt
-
 rm -r results/
+
+if [ ! -s all_URls.txt ]; then
+    echo "paramspider didnt find any URLs"
+    rm -r all_URls.txt
+else
+    echo "[paramspider]"
+fi
 
 echo "running kxss"
 
 cat all_URls.txt | kxss > kxss_results.txt
+
+echo "[kxss]"
 
 echo "running httpx [404]"
 
@@ -122,8 +128,6 @@ fi
 
 rm -f resolved_subdomains.txt
 
-# new work goes here
-
 echo "enter targets ASN (starts with 'AS'): "
 read target_ASN
 
@@ -136,7 +140,7 @@ else
     echo "found CIDR for that ASN, converting to IPs the script can proccess"
     cidr2ip -f CIDR_for_target.txt > target_IPs.txt
     echo "running naabu"
-    naabu -list CIDR_for_target.txt -top-ports 1000 -exclude-cdn -rate 750 -verify -o naabu_results.txt
+    naabu -list CIDR_for_target.txt -top-ports 1000 -exclude-cdn -rate 1000 -verify -o naabu_results.txt
     if [ ! -s naabu_results.txt ]; then
         echo "no results found with naabu"
         rm -f naabu_results.txt
@@ -144,7 +148,7 @@ else
     else
         echo "[naabu]"
     fi
-    httpx -l target_IPs.txt -sc -cl -ct -title -server -td -mc 200 -t 75 -o httpx_target_IPs.txt
+    httpx -l naabu_results.txt -sc -cl -ct -title -server -td -mc 200 -t 100 -o httpx_target_IPs.txt
     if [ ! -s httpx_target_IPs.txt ]; then
         echo "no results found with httpx for target IPs"
         rm -f httpx_target_IPs.txt
@@ -179,10 +183,7 @@ mkdir -p dirsearch
 
 source ~/.venv/bin/activate
 
-python3 "$HOME/dirsearch/dirsearch.py" -l 200_OK_subdomains.txt -t 30 -i 200 -o dirsearch/200_dirs.txt &
-python3 "$HOME/dirsearch/dirsearch.py" -l 404_subdomains.txt -t 30 -i 200 -o dirsearch/404_dirs.txt &
-
-wait
+python3 "$HOME/dirsearch/dirsearch.py" -l naabu_results.txt -t 30 -i 200 -o dirsearch/200_dirs.txt
 
 if [ ! -s dirsearch/200_dirs.txt ]; then
     echo "no results found with dirsearch for alive subdomains"
