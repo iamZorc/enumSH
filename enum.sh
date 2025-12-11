@@ -126,7 +126,7 @@ else
     fi
 fi
 
-rm -f resolved_sudomains.txt
+rm -f resolved_subdomains.txt
 
 # new work test
 
