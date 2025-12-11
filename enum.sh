@@ -1,6 +1,7 @@
 #!/bin/bash
 
 clear
+
 cat << "EOF"
    _____ _   _ _   _ __  __   _____ _    _
   | ____| \ | | | | |  \/  | / ____| |  | |
@@ -10,6 +11,7 @@ cat << "EOF"
   |_____|_| \_| \_/ |_|  |_|_____/ |_|  |_|
 
 EOF
+
 echo -e "                              with <3 by y0ussefelgohre"
 echo
 
