@@ -192,11 +192,4 @@ else
     echo "[dirsearch]"
 fi
 
-if [ ! -s dirsearch/404_dirs.txt  ]; then
-    echo "no results found with dirsearch for dead subdomains"
-    rm -f dirsearch/404_dirs.txt
-else
-    echo "[dirsearch]"
-fi
-
 deactivate
