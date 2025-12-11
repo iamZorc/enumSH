@@ -126,36 +126,68 @@ else
     fi
 fi
 
-rm -f resolved_subdomains.txt
+rm -f resolved_sudomains.txt
 
-echo "enter targets ASN (starts with 'AS'): "
-read target_ASN
+# new work test
 
-asnmap -a "$target_ASN" -o CIDR_for_target.txt
+echo -n "do you want to enter phase 2 (port scanning)? (y/n): "
+read phase2_choice
 
-if [ ! -s CIDR_for_target.txt ]; then
-    echo "no CIDR found with that ASN"
-    rm -f CIDR_for_target.txt
-else
-    echo "found CIDR for that ASN, converting to IPs the script can proccess"
-    cidr2ip -f CIDR_for_target.txt > target_IPs.txt
-    echo "running naabu"
-    naabu -list CIDR_for_target.txt -top-ports 1000 -exclude-cdn -rate 1000 -verify -o naabu_results.txt
-    if [ ! -s naabu_results.txt ]; then
-        echo "no results found with naabu"
-        rm -f naabu_results.txt
-        exit 1
+# Convert to lowercase for comparison
+phase2_choice_lower=$(echo "$phase2_choice" | tr '[:upper:]' '[:lower:]')
+
+if [[ "$phase2_choice_lower" == "y" || "$phase2_choice_lower" == "yes" ]]; then
+    echo "enter targets ASN (starts with 'AS'): "
+    read target_ASN
+
+    asnmap -a "$target_ASN" -o CIDR_for_target.txt
+
+    if [ ! -s CIDR_for_target.txt ]; then
+        echo "no CIDR found with that ASN"
+        rm -f CIDR_for_target.txt
     else
-        echo "[naabu]"
+        echo "found CIDR for that ASN, converting to IPs the script can proccess"
+        cidr2ip -f CIDR_for_target.txt > target_IPs.txt
+        echo "running naabu"
+        naabu -list target_IPs.txt -top-ports 1000 -exclude-cdn -rate 1000 -verify -o naabu_results.txt
+        if [ ! -s naabu_results.txt ]; then
+            echo "no results found with naabu"
+            rm -f naabu_results.txt
+            exit 1
+        else
+            echo "[naabu]"
+        fi
+        httpx -l naabu_results.txt -sc -cl -ct -title -server -td -mc 200 -t 100 -o httpx_target_IPs.txt
+        httpx -l target_IPs.txt -sc -cl -ct -title -server -td -mc 200 -t 100 >> httpx_target_IPs.txt
+        if [ ! -s httpx_target_IPs.txt ]; then
+            echo "no results found with httpx for target IPs"
+            rm -f httpx_target_IPs.txt
+        else
+            echo "[httpx]"
+        fi
     fi
-    httpx -l naabu_results.txt -sc -cl -ct -title -server -td -mc 200 -t 100 -o httpx_target_IPs.txt
-    if [ ! -s httpx_target_IPs.txt ]; then
-        echo "no results found with httpx for target IPs"
-        rm -f httpx_target_IPs.txt
+
+    echo "running dirsearch"
+
+    mkdir -p dirsearch
+
+    source ~/.venv/bin/activate
+
+    python3 "$HOME/dirsearch/dirsearch.py" -l naabu_results.txt -t 30 -i 200 -o dirsearch/200_dirs.txt
+
+    if [ ! -s dirsearch/200_dirs.txt ]; then
+        echo "no results found with dirsearch for alive subdomains"
+        rm -f dirsearch/200_dirs.txt
     else
-        echo "[httpx]"
+        echo "[dirsearch]"
     fi
+
+    deactivate
+elif [[ "$phase2_choice_lower" == "n" || "$phase2_choice_lower" == "no" ]]; then
+    echo "skipping phase 2, continuing..."
 fi
+
+# new work test
 
 echo "running dnsx again to get subdomains that has CNAME DNS records from the resolved subdomains"
 
@@ -176,20 +208,3 @@ else
         echo "[subjack]"
     fi
 fi
-
-echo "running dirsearch"
-
-mkdir -p dirsearch
-
-source ~/.venv/bin/activate
-
-python3 "$HOME/dirsearch/dirsearch.py" -l naabu_results.txt -t 30 -i 200 -o dirsearch/200_dirs.txt
-
-if [ ! -s dirsearch/200_dirs.txt ]; then
-    echo "no results found with dirsearch for alive subdomains"
-    rm -f dirsearch/200_dirs.txt
-else
-    echo "[dirsearch]"
-fi
-
-deactivate
