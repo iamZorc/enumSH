@@ -38,11 +38,11 @@
 
 ## - JS Analysis
 ### 9 gathering .js files
-* .[subjs](https://github.com/lc/subjs) - for gathering .js files from a list of subdomains or URLs
+* [subjs](https://github.com/lc/subjs) - for gathering .js files from a list of subdomains or URLs
 
 ### 10 static javascript file analysis
-* .[linkfinder](https://github.com/GerbenJavado/LinkFinder) - for finding endpoints in .js files
-* .[secretfinder](https://github.com/m4ll0k/SecretFinder) for searching for sensitive data in .js files
+* [linkfinder](https://github.com/GerbenJavado/LinkFinder) - for finding endpoints in .js files
+* [secretfinder](https://github.com/m4ll0k/SecretFinder) for searching for sensitive data in .js files
 
 ===
 
