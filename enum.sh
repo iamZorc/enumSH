@@ -3,13 +3,12 @@
 clear
 
 cat << "EOF"
-   _____ _   _ _   _ __  __   _____ _    _
-  | ____| \ | | | | |  \/  | / ____| |  | |
-  | |__ |  \| | | | | \  / | (___  | |__| |
-  | ___|| . ` | | | | |\/| | \___\ |  __  |
-  | |   | |\  | |_| | |  | |_____) | |  | |
-  |_____|_| \_| \_/ |_|  |_|_____/ |_|  |_|
-
+  ███████╗███╗   ██╗██╗   ██╗███╗   ███╗███████╗██╗  ██╗
+  ██╔════╝████╗  ██║██║   ██║████╗ ████║██╔════╝██║  ██║
+  █████╗  ██╔██╗ ██║██║   ██║██╔████╔██║███████╗███████║
+  ██╔══╝  ██║╚██╗██║██║   ██║██║╚██╔╝██║╚════██║██╔══██║
+  ███████╗██║ ╚████║╚██████╔╝██║ ╚═╝ ██║███████║██║  ██║
+  ╚══════╝╚═╝  ╚═══╝ ╚═════╝ ╚═╝     ╚═╝╚══════╝╚═╝  ╚═╝
 EOF
 
 echo -e "                              with <3 by y0ussefelgohre"
@@ -128,12 +127,9 @@ fi
 
 rm -f resolved_subdomains.txt
 
-# new work test
-
 echo -n "do you want to enter phase 2 (port scanning)? (y/n): "
 read phase2_choice
 
-# Convert to lowercase for comparison
 phase2_choice_lower=$(echo "$phase2_choice" | tr '[:upper:]' '[:lower:]')
 
 if [[ "$phase2_choice_lower" == "y" || "$phase2_choice_lower" == "yes" ]]; then
@@ -186,8 +182,6 @@ if [[ "$phase2_choice_lower" == "y" || "$phase2_choice_lower" == "yes" ]]; then
 elif [[ "$phase2_choice_lower" == "n" || "$phase2_choice_lower" == "no" ]]; then
     echo "skipping phase 2, continuing..."
 fi
-
-# new work test
 
 echo "running dnsx again to get subdomains that has CNAME DNS records from the resolved subdomains"
 
