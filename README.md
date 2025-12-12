@@ -1,6 +1,6 @@
 # enum.sh
 
-> a simple script that automates the initial phase of subdomain enumeration by chaining together several popular tools
+> a simple script that automates the initial phase of recon by chaining together several popular tools
 
 ---
 
@@ -33,6 +33,18 @@
 
 ### 8 CIDR to IP
 * [cidr2ip](https://github.com/codeexpress/cidr2ip) - for converting CIDR to a list of IPs so i can use it later
+
+===
+
+## - JS Analysis
+### 9 gathering .js files
+* .[subjs](https://github.com/lc/subjs) - for gathering .js files from a list of subdomains or URLs
+
+### 10 static javascript file analysis
+* .[linkfinder](https://github.com/GerbenJavado/LinkFinder) - for finding endpoints in .js files
+* .[secretfinder](https://github.com/m4ll0k/SecretFinder) for searching for sensitive data in .js files
+
+===
 
 ## notes
 
