@@ -3,6 +3,7 @@
 clear
 
 cat << "EOF"
+
   ███████╗███╗   ██╗██╗   ██╗███╗   ███╗███████╗██╗  ██╗
   ██╔════╝████╗  ██║██║   ██║████╗ ████║██╔════╝██║  ██║
   █████╗  ██╔██╗ ██║██║   ██║██╔████╔██║███████╗███████║
@@ -24,8 +25,6 @@ echo -n "enter target name (in this format -> target.TLD): "
 
 read domain
 
-# domain_no_TLD="${domain%%.*}"
-
 mkdir -p "$domain"
 
 cd "$domain"
@@ -44,33 +43,51 @@ for file in subdomains*.txt; do
     [ -s "$file" ] || rm -f "$file"
 done
 
-cat subdomains*.txt 2>/dev/null | sort -u > subdomains.txt
+cat subdomains*.txt 2>/dev/null | sort -u > all_domains.txt
 
 rm -f subdomains{1..5}.txt
 
 echo "[findomain, assetfinder, subfinder, github-subdomains, subbdom API]"
 
-cat subdomains.txt | sort -u > all_domains.txt
+js_recon() {
+    local input_file="$1"
+    local output_file="$2"
+
+    subjs -i "$input_file" | grep "$domain" > "$output_file"
+    if [ ! -s "$output_file" ]; then
+        echo "subjs returned no results"
+        rm -f "$output_file"
+        return 1
+    else
+        echo "[subjs]"
+    fi
+
+    source ../../.venv/bin/activate
+    mkdir js_recon{1..2}
+    python3 ../../LinkFinder/linkfinder.py -i "$output_file" -o js_recon1/output.html
+    if [ ! -s js_recon1/linkfinder_results.txt ]; then
+        echo "linkfinder returned no results"
+        rm -rf js_recon1
+    else
+        echo "[linkfinder]"
+    fi
+
+    python3 ../../secretfinder/SecretFinder.py -i "$output_file" -o js_recon2/output.html
+    if [ ! -s js_recon2/secretfinder_results.txt ]; then
+        echo "secretfinder returned no results"
+        rm -rf js_recon2
+    else
+        echo "[secretfinder]"
+    fi
+
+    deactivate
+}
 
 dnsx -l all_domains.txt -r ../resolvers.txt -json -o master_dns.json
 
-echo "running dnsx to get subdomains that resolve"
-
-cat master_dns.json | jq -r 'select(.status_code == "NOERROR") | .host' | sort -u > resolved_subdomains.txt
-
-if [ ! -s resolved_subdomains.txt ]; then
-    echo "no resolved subdomains found, exiting."
-    rm -f resolved_subdomains.txt
-    exit 1
-else
-    echo "[dnsx]"
-fi
-
-rm -f all_domains.txt
-
 echo "running httpx [200 OK]"
 
-httpx -l resolved_subdomains.txt -mc 200 -timeout 5 -o 200_OK_subdomains.txt
+httpx -l all_domains.txt -mc 200 -timeout 5 -o 200_OK_subdomains.txt
 
 if [ ! -s 200_OK_subdomains.txt ]; then
     echo "no 200 OK subdomains found"
@@ -86,6 +103,8 @@ else
         echo "important subdomains found"
     fi
 fi
+
+js_recon "200_OK_subdomains.txt" "200_js.txt"
 
 echo "running paramspider"
 
@@ -109,7 +128,7 @@ echo "[kxss]"
 
 echo "running httpx [404]"
 
-httpx -l resolved_subdomains.txt -mc 404 -timeout 5 -o 404_subdomains.txt
+httpx -l all_domains.txt -mc 404 -timeout 5 -o 404_subdomains.txt
 
 if [ ! -s 404_subdomains.txt ]; then
     echo "no dead subdomains found"
@@ -125,11 +144,12 @@ else
     fi
 fi
 
-rm -f resolved_subdomains.txt
+js_recon "404_subdomains.txt" "404_js.txt"
 
 echo -n "do you want to enter phase 2 (port scanning)? (y/n): "
 read phase2_choice
 
+# Convert to lowercase for comparison
 phase2_choice_lower=$(echo "$phase2_choice" | tr '[:upper:]' '[:lower:]')
 
 if [[ "$phase2_choice_lower" == "y" || "$phase2_choice_lower" == "yes" ]]; then
@@ -182,6 +202,8 @@ if [[ "$phase2_choice_lower" == "y" || "$phase2_choice_lower" == "yes" ]]; then
 elif [[ "$phase2_choice_lower" == "n" || "$phase2_choice_lower" == "no" ]]; then
     echo "skipping phase 2, continuing..."
 fi
+
+# new work test
 
 echo "running dnsx again to get subdomains that has CNAME DNS records from the resolved subdomains"
 
