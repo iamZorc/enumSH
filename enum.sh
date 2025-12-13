@@ -33,9 +33,10 @@ echo "running findomain, assetfinder, subfinder, github-subdomains, subbdom API"
 
 findomain -t "$domain" -u subdomains1.txt &
 assetfinder --subs-only "$domain" > subdomains2.txt &
-subfinder -d "$domain"  -config ~/.config/subfinder/config.yaml -o subdomains3.txt &
+subfinder -d "$domain"  -all -recursive -config ~/.config/subfinder/config.yaml -o subdomains3.txt &
 github-subdomains -d "$domain" -t "$github_token" -o subdomains4.txt &
 curl -H "x-api-key: "$subbdom_token"" "https://api.subbdom.com/v1/search?z=$domain" | jq -r '.[]' > subdomains5.txt &
+amass enum --passive -d "$domain" | grep "$domain" | awk '{print $1}' > subdomains6.txt  &
 
 wait
 
@@ -45,7 +46,7 @@ done
 
 cat subdomains*.txt 2>/dev/null | sort -u > all_domains.txt
 
-rm -f subdomains{1..5}.txt
+rm -f subdomains{1..6}.txt
 
 echo "[findomain, assetfinder, subfinder, github-subdomains, subbdom API]"
 
@@ -149,7 +150,6 @@ js_recon "404_subdomains.txt" "404_js.txt"
 echo -n "do you want to enter phase 2 (port scanning)? (y/n): "
 read phase2_choice
 
-# Convert to lowercase for comparison
 phase2_choice_lower=$(echo "$phase2_choice" | tr '[:upper:]' '[:lower:]')
 
 if [[ "$phase2_choice_lower" == "y" || "$phase2_choice_lower" == "yes" ]]; then
@@ -203,8 +203,6 @@ elif [[ "$phase2_choice_lower" == "n" || "$phase2_choice_lower" == "no" ]]; then
     echo "skipping phase 2, continuing..."
 fi
 
-# new work test
-
 echo "running dnsx again to get subdomains that has CNAME DNS records from the resolved subdomains"
 
 cat master_dns.json | jq -r 'select(.cname != null) | .host' | sort -u > CNAME_subdomains.txt
@@ -215,12 +213,4 @@ if [ ! -s CNAME_subdomains.txt ]; then
 else
    echo "step 10 done [dnsx]"
    rm -f master_dns.json
-   echo "running subjack"
-   subjack -w CNAME_subdomains.txt -t 100 -timeout 30 -c ../fingerprints.json -o subjack_results.txt
-    if [ ! -s subjack_results.txt ]; then
-        echo "no subdomain takeover found"
-        rm -f subjack_results.txt
-    else
-        echo "[subjack]"
-    fi
 fi
