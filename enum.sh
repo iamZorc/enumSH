@@ -36,7 +36,7 @@ assetfinder --subs-only "$domain" > subdomains2.txt &
 subfinder -d "$domain"  -all -recursive -config ~/.config/subfinder/config.yaml -o subdomains3.txt &
 github-subdomains -d "$domain" -t "$github_token" -o subdomains4.txt &
 curl -H "x-api-key: "$subbdom_token"" "https://api.subbdom.com/v1/search?z=$domain" | jq -r '.[]' > subdomains5.txt &
-amass enum --passive -d "$domain" | grep "\.$domain$" | awk '{print $1}' > subdomains6.txt  &
+#amass enum --passive -d "$domain" | grep "\.$domain$" | awk '{print $1}' > subdomains6.txt  &
 
 wait
 
@@ -46,7 +46,7 @@ done
 
 cat subdomains*.txt 2>/dev/null | sort -u > all_domains.txt
 
-rm -f subdomains{1..6}.txt
+rm -f subdomains{1..5}.txt
 
 echo "[findomain, assetfinder, subfinder, github-subdomains, subbdom API]"
 
@@ -64,19 +64,18 @@ js_recon() {
     fi
 
     source ../../.venv/bin/activate
-    mkdir js_recon{1..2}
-    python3 ../../LinkFinder/linkfinder.py -i "$output_file" -o js_recon1/output.html
-    if [ ! -s js_recon1/linkfinder_results.txt ]; then
+    python3 ../../LinkFinder/linkfinder.py -i "$output_file" -o cli | sort > linkfinder_results.txt
+    if [ ! -s linkfinder_results.txt ]; then
         echo "linkfinder returned no results"
-        rm -rf js_recon1
+        rm -f linkfinder_results.txt
     else
         echo "[linkfinder]"
     fi
 
-    python3 ../../secretfinder/SecretFinder.py -i "$output_file" -o js_recon2/output.html
-    if [ ! -s js_recon2/secretfinder_results.txt ]; then
+    python3 ../../secretfinder/SecretFinder.py -i "$output_file" -o cli | sort > secretfinder_results.txt
+    if [ ! -s secretfinder_results.txt ]; then
         echo "secretfinder returned no results"
-        rm -rf js_recon2
+        rm -f secretfinder_results.txt
     else
         echo "[secretfinder]"
     fi
