@@ -36,9 +36,17 @@ assetfinder --subs-only "$domain" > subdomains2.txt &
 subfinder -d "$domain"  -all -recursive -config ~/.config/subfinder/config.yaml -o subdomains3.txt &
 github-subdomains -d "$domain" -t "$github_token" -o subdomains4.txt &
 curl -H "x-api-key: "$subbdom_token"" "https://api.subbdom.com/v1/search?z=$domain" | jq -r '.[]' > subdomains5.txt &
-#amass enum --passive -d "$domain" | grep "\.$domain$" | awk '{print $1}' > subdomains6.txt  &
 
 wait
+
+echo "do you want to query securitytrails API to get subdomains?(y/n): "
+
+read securitytrails_answer
+
+if [ "$securitytrails_answer" == "y" ]; then
+    echo "querying securitytrails"
+    curl "https://api.securitytrails.com/v1/domain/${domain}/subdomains" -H "apikey: "$ST_API_KEY"" | jq .subdomains[] -r | awk -v d="$domain" '{print $0"."d}' | sort > subdomains6.txt
+fi
 
 for file in subdomains*.txt; do
     [ -s "$file" ] || rm -f "$file"
@@ -46,7 +54,7 @@ done
 
 cat subdomains*.txt 2>/dev/null | sort -u > all_domains.txt
 
-rm -f subdomains{1..5}.txt
+rm -f subdomains{1..6}.txt
 
 echo "[findomain, assetfinder, subfinder, github-subdomains, subbdom API]"
 
@@ -114,7 +122,7 @@ cat results/*.txt > all_URls.txt
 rm -r results/
 
 if [ ! -s all_URls.txt ]; then
-    echo "no URLs founs"
+    echo "no URLs found"
     rm -r all_URls.txt
 else
     echo "[paramspider]"
@@ -147,11 +155,10 @@ fi
 js_recon "404_subdomains.txt" "404_js.txt"
 
 echo -n "do you want to enter phase 2 (port scanning)? (y/n): "
+
 read phase2_choice
 
-phase2_choice_lower=$(echo "$phase2_choice" | tr '[:upper:]' '[:lower:]')
-
-if [[ "$phase2_choice_lower" == "y" || "$phase2_choice_lower" == "yes" ]]; then
+if [ "$phase2_choice" == "y" ]; then
     echo "enter targets ASN (starts with 'AS'): "
     read target_ASN
 
