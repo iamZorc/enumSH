@@ -97,10 +97,10 @@ else
     echo "[httpx]"
     grep -Ef ../keywords.txt 200_OK_subdomains.txt > important_200_subdomains.txt
     if [ ! -s important_200_subdomains.txt ]; then
-        echo "no alive important subdomain"
+        echo "no alive important subdomain found"
         rm -f important_200_subdomains.txt
     else
-        echo "important subdomains found"
+        echo "alive important subdomains found"
     fi
 fi
 
@@ -114,7 +114,7 @@ cat results/*.txt > all_URls.txt
 rm -r results/
 
 if [ ! -s all_URls.txt ]; then
-    echo "paramspider didnt find any URLs"
+    echo "no URLs founs"
     rm -r all_URls.txt
 else
     echo "[paramspider]"
@@ -137,7 +137,7 @@ else
     echo "[httpx]"
     grep -Ef ../keywords.txt 404_subdomains.txt > important_404_subdomains.txt
     if [ ! -s important_404_subdomains.txt ]; then
-        echo "no important subdomain"
+        echo "no important subdomain found"
         rm -f important_404_subdomains.txt
     else
         echo "important subdomains found"
@@ -158,7 +158,7 @@ if [[ "$phase2_choice_lower" == "y" || "$phase2_choice_lower" == "yes" ]]; then
     asnmap -a "$target_ASN" -o CIDR_for_target.txt
 
     if [ ! -s CIDR_for_target.txt ]; then
-        echo "no CIDR found with that ASN"
+        echo "no CIDR found with that ASN found"
         rm -f CIDR_for_target.txt
     else
         echo "found CIDR for that ASN, converting to IPs the script can proccess"
