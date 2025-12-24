@@ -45,7 +45,7 @@ read securitytrails_answer
 
 if [ "$securitytrails_answer" == "y" ]; then
     echo "querying securitytrails"
-    curl "https://api.securitytrails.com/v1/domain/${domain}/subdomains" -H "apikey: "$ST_API_KEY"" | jq .subdomains[] -r | awk -v d="$domain" '{print $0"."d}' | sort > subdomains6.txt
+    curl "https://api.securitytrails.com/v1/domain/${domain}/subdomains" -H "apikey: "$ST_API_KEY"" | jq .subdomains[] -r | awk -v d="$domain" '{print $0"."d}' > subdomains6.txt
 fi
 
 for file in subdomains*.txt; do
