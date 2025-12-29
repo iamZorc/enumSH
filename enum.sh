@@ -170,6 +170,7 @@ if [ "$phase2_choice" == "y" ]; then
     else
         echo "found CIDR for that ASN, converting to IPs the script can proccess"
         cidr2ip -f CIDR_for_target.txt > target_IPs.txt
+        rm -f CIDR_for_target.txt
         echo "running naabu"
         naabu -list target_IPs.txt -top-ports 1000 -exclude-cdn -rate 1000 -verify -o naabu_results.txt
         if [ ! -s naabu_results.txt ]; then
@@ -181,6 +182,7 @@ if [ "$phase2_choice" == "y" ]; then
         fi
         httpx -l naabu_results.txt -sc -cl -ct -title -server -td -mc 200 -t 100 -o httpx_target_IPs.txt
         httpx -l target_IPs.txt -sc -cl -ct -title -server -td -mc 200 -t 100 >> httpx_target_IPs.txt
+        rm -f target_IPs.txt
         if [ ! -s httpx_target_IPs.txt ]; then
             echo "no results found with httpx for target IPs"
             rm -f httpx_target_IPs.txt
