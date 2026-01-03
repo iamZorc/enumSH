@@ -58,39 +58,6 @@ rm -f subdomains{1..6}.txt
 
 echo "[findomain, assetfinder, subfinder, github-subdomains, subbdom API]"
 
-js_recon() {
-    local input_file="$1"
-    local output_file="$2"
-
-    subjs -i "$input_file" | grep "$domain" > "$output_file"
-    if [ ! -s "$output_file" ]; then
-        echo "subjs returned no results"
-        rm -f "$output_file"
-        return 1
-    else
-        echo "[subjs]"
-    fi
-
-    source ../../.venv/bin/activate
-    python3 ../../LinkFinder/linkfinder.py -i "$output_file" -o cli | sort > linkfinder_results.txt
-    if [ ! -s linkfinder_results.txt ]; then
-        echo "linkfinder returned no results"
-        rm -f linkfinder_results.txt
-    else
-        echo "[linkfinder]"
-    fi
-
-    python3 ../../secretfinder/SecretFinder.py -i "$output_file" -o cli | sort > secretfinder_results.txt
-    if [ ! -s secretfinder_results.txt ]; then
-        echo "secretfinder returned no results"
-        rm -f secretfinder_results.txt
-    else
-        echo "[secretfinder]"
-    fi
-
-    deactivate
-}
-
 dnsx -l all_domains.txt -r ../resolvers.txt -json -o master_dns.json
 
 echo "running httpx [200 OK]"
@@ -112,8 +79,6 @@ else
     fi
 fi
 
-js_recon "200_OK_subdomains.txt" "200_js.txt"
-
 echo "running paramspider"
 
 paramspider -l 200_OK_subdomains.txt
@@ -134,6 +99,8 @@ cat all_URls.txt | kxss > kxss_results.txt
 
 echo "[kxss]"
 
+rm -f all_URls.txt
+
 echo "running httpx [404]"
 
 httpx -l all_domains.txt -mc 404 -timeout 5 -o 404_subdomains.txt
@@ -152,7 +119,7 @@ else
     fi
 fi
 
-js_recon "404_subdomains.txt" "404_js.txt"
+rm -f all_domains.txt
 
 echo -n "do you want to enter phase 2 (port scanning)? (y/n): "
 
