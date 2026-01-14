@@ -36,6 +36,7 @@ assetfinder --subs-only "$domain" > subdomains2.txt &
 subfinder -d "$domain"  -all -recursive -config ~/.config/subfinder/config.yaml -o subdomains3.txt &
 github-subdomains -d "$domain" -t "$github_token" -o subdomains4.txt &
 curl -H "x-api-key: "$subbdom_token"" "https://api.subbdom.com/v1/search?z=$domain" | jq -r '.[]' > subdomains5.txt &
+amass enum -d "$domain" -o output.txt &
 
 wait
 
