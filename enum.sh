@@ -164,8 +164,8 @@ if [ "$phase2_choice" == "y" ]; then
         fi
     fi
 
-elif [[ "$phase2_choice_lower" == "n" || "$phase2_choice_lower" == "no" ]]; then
-    echo "skipping phase 2, continuing..."
+else
+    echo "skipping phase 2"
 fi
 
 echo "running dnsx again to get subdomains that has CNAME DNS records from the resolved subdomains"
