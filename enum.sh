@@ -40,13 +40,18 @@ amass enum -d "$domain" -o output.txt &
 
 wait
 
+if [ -s output.txt ]; then
+    awk '{print $1}' output.txt | grep "$domain" | sort -u > subdomains6.txt
+    rm -f output.txt
+fi
+
 echo "do you want to query securitytrails API to get subdomains?(y/n): "
 
 read securitytrails_answer
 
 if [ "$securitytrails_answer" == "y" ]; then
     echo "querying securitytrails"
-    curl "https://api.securitytrails.com/v1/domain/${domain}/subdomains" -H "apikey: "$ST_API_KEY"" | jq .subdomains[] -r | awk -v d="$domain" '{print $0"."d}' > subdomains6.txt
+    curl "https://api.securitytrails.com/v1/domain/${domain}/subdomains" -H "apikey: "$ST_API_KEY"" | jq .subdomains[] -r | awk -v d="$domain" '{print $0"."d}' > subdomains7.txt
 fi
 
 for file in subdomains*.txt; do
@@ -55,9 +60,9 @@ done
 
 cat subdomains*.txt 2>/dev/null | sort -u > all_domains.txt
 
-rm -f subdomains{1..6}.txt
+rm -f subdomains{1..7}.txt
 
-echo "[findomain, assetfinder, subfinder, github-subdomains, subbdom API]"
+echo "[findomain, assetfinder, subfinder, github-subdomains, amass, subbdom API]"
 
 dnsx -l all_domains.txt -r ../resolvers.txt -json -o master_dns.json
 
@@ -159,22 +164,6 @@ if [ "$phase2_choice" == "y" ]; then
         fi
     fi
 
-    echo "running dirsearch"
-
-    mkdir -p dirsearch
-
-    source ~/.venv/bin/activate
-
-    python3 "$HOME/dirsearch/dirsearch.py" -l naabu_results.txt -t 30 -i 200 -o dirsearch/200_dirs.txt
-
-    if [ ! -s dirsearch/200_dirs.txt ]; then
-        echo "no results found with dirsearch for alive subdomains"
-        rm -f dirsearch/200_dirs.txt
-    else
-        echo "[dirsearch]"
-    fi
-
-    deactivate
 elif [[ "$phase2_choice_lower" == "n" || "$phase2_choice_lower" == "no" ]]; then
     echo "skipping phase 2, continuing..."
 fi
