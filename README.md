@@ -19,6 +19,7 @@
 * [kxss](https://github.com/Emoe/kxss)
 * [cidr2ip](https://github.com/codeexpress/cidr2ip)
 * [securitytrails](https://securitytrails.com/app/account/quota)
+* [Cewl](https://github.com/digininja/CeWL)
 
 resolvers.txt is updated on my VPS using cron command to curl the newset [resolvers.txt](https://github.com/trickest/resolvers/blob/main/resolvers.txt) and then override the current file with the newst version
 
