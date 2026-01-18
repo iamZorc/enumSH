@@ -24,3 +24,6 @@ resolvers.txt is updated on my VPS using cron command to curl the newset [resolv
 
 keywords.txt file has certain words I'm looking for in subdomains.txt to extract subdomains I'll give priority for, I'll add new words when i find more of em
 
+===
+
+<h3>well, i did write this just cuz i did not know about Ars0n recon framework, its for sure way better than this but my script is also decent to a certain level.. ill keep updating this and adding new stuff to it</h3>
